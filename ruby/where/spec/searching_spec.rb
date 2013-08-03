@@ -1,7 +1,7 @@
 require 'searching'
 
 describe Searching do
-  context "where" do
+  context 'where' do
     before(:all) do
       @boris   = {:name => 'Boris The Blade',
                   :quote => "Heavy is good. Heavy is reliable. If it doesn't work you can always hit them.",
@@ -15,12 +15,12 @@ describe Searching do
                   :quote => 'I think fast, I talk fast and I need you guys to act fast if you wanna get out of this',
                   :title => 'Pulp Fiction',
                   :rank => 4}
-      @glen    = {:name => 'Glengarry Glen Ross',
-                  :quote => "Put. That coffee. Down. Coffee is for closers only.",
-                  :title => "Blake",
+      @blake   = {:name => 'Blake',
+                  :quote => 'Put. That coffee. Down. Coffee is for closers only.',
+                  :title => 'Glengarry Glen Ross',
                   :rank => 5}
 
-      @fixtures = [@boris, @charles, @wolf, @glen]
+      @fixtures = [@boris, @charles, @wolf, @blake]
     end
 
     it 'should return results from exact matches' do
@@ -28,7 +28,7 @@ describe Searching do
     end
 
     it 'should return results from partial matches (regex)' do
-      @fixtures.where(:title => /^B.*/).should == [@charles, @glen]
+      @fixtures.where(:title => /^B.*/).should == [@charles, @blake]
     end
 
     it 'should return mutliple results from exact matches' do
