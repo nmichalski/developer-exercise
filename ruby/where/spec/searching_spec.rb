@@ -28,7 +28,7 @@ describe Searching do
     end
 
     it 'should return results from partial matches (regex)' do
-      @fixtures.where(:title => /^B.*/).should == [@charles, @blake]
+      @fixtures.where(:name => /^B.*/).should == [@boris, @blake]
     end
 
     it 'should return mutliple results from exact matches' do
