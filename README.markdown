@@ -41,7 +41,7 @@ Please, write a ruby api that for now takes a search string and returns 3 releva
 `blackjack.rb` contains initial work on blackjack simulation
 
 Please, use your discretion in fixing/adding tests. You are free to use/convert to any testing framework you want. 
-You will need to implement the following functionality functionality.
+You will need to implement the following functionality.
 
  * As a Player I can get a hand with two cards in it
  * As a Dealer I can get a hand with two cards in it
