@@ -1,14 +1,14 @@
 class Card
-  attr_accessor :suite, :name, :value
+  attr_accessor :suit, :name, :value
 
-  def initialize(suite, name, value)
-    @suite, @name, @value = suite, name, value
+  def initialize(suit, name, value)
+    @suit, @name, @value = suit, name, value
   end
 end
 
 class Deck
   attr_accessor :playable_cards
-  SUITES = [:hearts, :diamonds, :spades, :clubs]
+  SUITS = [:hearts, :diamonds, :spades, :clubs]
   NAME_VALUES = {
     :two   => 2,
     :three => 3,
@@ -35,9 +35,9 @@ class Deck
 
   def shuffle
     @playable_cards = []
-    SUITES.each do |suite|
+    SUITS.each do |suit|
       NAME_VALUES.each do |name, value|
-        @playable_cards << Card.new(suite, name, value)
+        @playable_cards << Card.new(suit, name, value)
       end
     end
   end
