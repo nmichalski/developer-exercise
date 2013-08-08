@@ -10,7 +10,7 @@ class YoutubeSearch
     def search_youtube_for(query_string)
       search_url = generate_search_url(query_string)
       response = make_request_to_url(search_url)
-      urls = extract_urls_from_response(response)
+      extract_urls_from_response(response)
     end
 
     private
@@ -26,11 +26,11 @@ class YoutubeSearch
 
     def extract_urls_from_response(response)
       results = JSON.parse(response)
-      results["feed"]["entry"].collect{|result| result_url(result)}
+      results['feed']['entry'].collect{|result| result_url(result)}
     end
 
     def result_url(result)
-      result["link"].first["href"]
+      result['link'].first['href']
     end
   end
 end
