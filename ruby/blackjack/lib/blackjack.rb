@@ -4,6 +4,14 @@ class Card
   def initialize(suit, name, value)
     @suit, @name, @value = suit, name, value
   end
+
+  def min_value
+    @name == :ace ? @value.min : @value
+  end
+
+  def max_value
+    @name == :ace ? @value.max : @value
+  end
 end
 
 class Deck
@@ -48,5 +56,67 @@ class Hand
 
   def initialize
     @cards = []
+  end
+
+  def points
+    calculated_points = @cards.inject(0) {|sum, card| sum += card.max_value}
+    number_of_aces = @cards.count{|card| card.name == :ace}
+
+    while (calculated_points > 21) && (number_of_aces != 0)
+      calculated_points -= 10
+      number_of_aces -= 1
+    end
+
+    calculated_points
+  end
+
+  def first_card
+    @cards.first
+  end
+
+  def add_card(card)
+    @cards << card
+  end
+end
+
+class Player
+  attr_accessor :hand
+
+  def initialize
+    @hand = Hand.new
+  end
+
+  def initial_deal(deck)
+    2.times do
+      @hand.add_card(deck.deal_card)
+    end
+  end
+
+  def hit(card)
+    @hand.add_card(card)
+  end
+
+  def has_bust?
+    @hand.points > 21
+  end
+
+  def has_blackjack?
+    @hand.points == 21
+  end
+
+  def hand_value
+    @hand.points
+  end
+end
+
+class Dealer < Player
+  def shown_card
+    @hand.first_card
+  end
+
+  def finish_drawing_cards(deck)
+    while @hand.points < 17
+      hit(deck.deal_card)
+    end
   end
 end
