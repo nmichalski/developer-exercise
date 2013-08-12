@@ -30,7 +30,8 @@ class Deck
     :jack  => 10,
     :queen => 10,
     :king  => 10,
-    :ace   => [11, 1]}
+    :ace   => [11, 1]
+  }
 
   def initialize
     shuffle
@@ -60,8 +61,9 @@ class Hand
 
   def points
     calculated_points = @cards.inject(0) {|sum, card| sum += card.max_value}
-    number_of_aces = @cards.count{|card| card.name == :ace}
+    return calculated_points if calculated_points <= 21
 
+    number_of_aces = @cards.count{|card| card.name == :ace}
     while (calculated_points > 21) && (number_of_aces != 0)
       calculated_points -= 10
       number_of_aces -= 1
@@ -97,7 +99,7 @@ class Player
   end
 
   def should_hit?
-    rand(0..1) == 0 #player randomly hits once
+    rand(2) == 0 #player randomly hits once
   end
 
   def has_bust?
@@ -169,6 +171,7 @@ class Game
 
     player_finishes_drawing_cards
     return 'player bust!' if @player.has_bust?
+    return 'player wins with blackjack!' if @player.has_blackjack?
 
     dealer_finishes_drawing_cards
     return 'player wins since dealer bust!' if @dealer.has_bust?
