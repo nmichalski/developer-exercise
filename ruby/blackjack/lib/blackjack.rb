@@ -80,20 +80,24 @@ class Hand
 end
 
 class Player
-  attr_accessor :hand
+  attr_accessor :hand, :game
 
-  def initialize
+  def initialize(game)
+    @game = game
     @hand = Hand.new
   end
 
-  def initial_deal(deck)
-    2.times do
-      @hand.add_card(deck.deal_card)
-    end
+  def hit
+    dealt_card = @game.deal_card
+    @hand.add_card(dealt_card)
   end
 
-  def hit(card)
-    @hand.add_card(card)
+  def finish_drawing_cards
+    hit if should_hit?
+  end
+
+  def should_hit?
+    rand(0..1) == 0 #player randomly hits once
   end
 
   def has_bust?
@@ -114,9 +118,62 @@ class Dealer < Player
     @hand.first_card
   end
 
-  def finish_drawing_cards(deck)
+  def finish_drawing_cards
     while @hand.points < 17
-      hit(deck.deal_card)
+      hit
     end
+  end
+end
+
+class Game
+  attr_accessor :deck, :player, :dealer
+
+  def initialize
+    @deck = Deck.new
+    @player = Player.new(self)
+    @dealer = Dealer.new(self)
+  end
+
+  def initial_deal
+    2.times do
+      @player.hit
+      @dealer.hit
+    end
+  end
+
+  def deal_card
+    @deck.deal_card
+  end
+
+  def player_finishes_drawing_cards
+    @player.finish_drawing_cards
+  end
+
+  def dealer_finishes_drawing_cards
+    @dealer.finish_drawing_cards
+  end
+
+  def decide_winner
+    winner = nil
+    if @player.hand_value > @dealer.hand_value
+      winner = 'player'
+    elsif @player.hand_value < @dealer.hand_value
+      winner = 'dealer'
+    end
+    winner
+  end
+
+  def complete_a_round
+    initial_deal
+    return 'player wins with blackjack!' if @player.has_blackjack?
+
+    player_finishes_drawing_cards
+    return 'player bust!' if @player.has_bust?
+
+    dealer_finishes_drawing_cards
+    return 'player wins since dealer bust!' if @dealer.has_bust?
+
+    winner = decide_winner
+    return (winner ? "#{winner} wins with a better hand!" : "it's a push!")
   end
 end

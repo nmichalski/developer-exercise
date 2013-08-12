@@ -68,27 +68,23 @@ describe 'Blackjack' do
 
   describe Player do
     before(:each) do
-      @deck = Deck.new
-      @player = Player.new
+      @game = Game.new
+      @game.initial_deal
+      @player = @game.player
     end
 
     it 'should be dealt a hand with 2 cards' do
-      @player.initial_deal(@deck)
-
       @player.hand.cards.size.should == 2
     end
 
     it 'should be able to see the card the dealer is showing' do
-      dealer = Dealer.new
-      dealer.initial_deal(@deck)
+      dealer = @game.dealer
       dealer.shown_card.should == dealer.hand.cards.first
     end
 
     it 'should bust (lose immediately) when hand value is more than 21' do
-      @player.initial_deal(@deck)
-
       while @player.hand_value <= 21
-        @player.hit(@deck.deal_card)
+        @player.hit
       end
 
       @player.has_bust?.should == true
@@ -103,63 +99,69 @@ describe 'Blackjack' do
 
   describe Dealer do
     before(:each) do
-      @deck = Deck.new
-      card1 = Card.new(:clubs, :king, 10)
-      card2 = Card.new(:hearts, :six, 6)
-      card3 = Card.new(:spades, :four, 4)
-      @deck.playable_cards = [card1, card2, card3]
-
-      @dealer = Dealer.new
-      @dealer.initial_deal(@deck)
+      @game = Game.new
+      @game.initial_deal
     end
 
     it 'should have an initial hand with 2 cards' do
-      @dealer.hand.cards.size.should == 2
+      dealer = @game.dealer
+      dealer.hand.cards.size.should == 2
     end
 
     it 'should stay at any hand value at 17 or higher' do
-      expect { @dealer.finish_drawing_cards(@deck) }.to change{@dealer.hand_value}.to(20)
+      dealer = @game.dealer
+      dealer.hand.stub!(:points).and_return(17)
+      dealer.should_receive(:hit).exactly(0).times
+
+      dealer.finish_drawing_cards
     end
 
     it 'should draw cards after the player until it wins or loses' do
-      player = Player.new
+      player = @game.player
       player.hand.stub!(:points).and_return(18)
+      player.stub!(:should_hit?).and_return(false)
 
-      @dealer.finish_drawing_cards(@deck)
+      dealer = @game.dealer
+      dealer.hand.stub!(:points).and_return(20)
+      dealer.finish_drawing_cards
 
-      @dealer.has_bust?.should == false
-      @dealer.has_blackjack?.should == false
-      @dealer.hand_value.should > player.hand_value
+      dealer.hand_value.should > player.hand_value
     end
   end
 
-  it 'should play a game' do
-    expect do
-      deck = Deck.new
-      player = Player.new
-      dealer = Dealer.new
+  describe Game do
+    before(:all) do
+      @game = Game.new
+    end
 
-      player.initial_deal(deck)
-      dealer.initial_deal(deck)
+    it 'should connect both players to the same game' do
+      @game.player.game.should == @game
+      @game.dealer.game.should == @game
+    end
 
-      if player.has_blackjack?
-        raise "player wins (with blackjack)!"
-      elsif rand(0..1) == 0 #player randomly hits once
-        player.hit(deck.deal_card)
-        raise "dealer wins (player bust)!" if player.has_bust?
-      end
+    it 'should initially deal 2 cards to the player and dealer' do
+      @game.initial_deal
+      @game.player.hand.cards.size.should == 2
+      @game.dealer.hand.cards.size.should == 2
+    end
 
-      #dealer hits according to his 17 rule
-      dealer.finish_drawing_cards(deck)
-      raise "player wins (dealer bust)!" if dealer.has_bust?
+    it 'should decide a winner when hand values arent blackjack or bust' do
+      @game.player.stub!(:hand_value).and_return(20)
+      @game.dealer.stub!(:hand_value).and_return(18)
+      @game.decide_winner.should == 'player'
+    end
 
-      if player.hand_value > dealer.hand_value
-        raise "player wins (> dealer hand)!"
-      elsif player.hand_value < dealer.hand_value
-        raise "dealer wins (> player hand)!"
-      else # player.hand_value == dealer.hand_value
-        raise "it's a push!"
-      end
-    end.to raise_error
+    it 'should play a game' do
+      game_over_message = @game.complete_a_round
+      possible_outcomes = [
+        'player wins with blackjack!',
+        'player bust!',
+        'player wins since dealer bust!',
+        'player wins with a better hand!',
+        'dealer wins with a better hand!',
+        "it's a push!"
+      ]
+      possible_outcomes.should include(game_over_message)
+    end
   end
 end
